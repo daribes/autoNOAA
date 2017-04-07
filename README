@@ -1,0 +1,7 @@
+################################################################################
+#                                autoNOAA 1.0                                  #
+################################################################################
+
+Este script en python sirve para automatizar la sintonización de un dongle SDR
+permitiendo que WXtoimg genere recoga el audio y genere las imagenes que transmiten
+los satelites NOAA en funcionamiento
