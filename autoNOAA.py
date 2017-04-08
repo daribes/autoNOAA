@@ -34,17 +34,16 @@ def crea_tle(ruta):
     tarchivo = open(ruta, "w")
     activado = False
     for linea in archivo.readlines():
-        tlinea = linea[:6]
         if not activado:
-            if tlinea == 'NOAA 15':
+            if linea[:6] == 'NOAA 15':
                 tarchivo.write('NOAA-15\n')
                 activado = True
                 cuenta = 1
-            elif tlinea == 'NOAA 18':
+            elif linea[:6] == 'NOAA 18':
                 tarchivo.write('NOAA-18\n')
                 activado = True
                 cuenta = 1
-            elif tlinea == 'NOAA 19':
+            elif linea[:6] == 'NOAA 19':
                 tarchivo.write('NOAA-19\n')
                 activado = True
                 cuenta = 1
