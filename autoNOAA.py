@@ -23,9 +23,9 @@ if not os.path.isfile('/usr/bin/predict'):
 
 def crea_tle(ruta):
     print 'ATENCION: El archivo predict.tle no es correcto, SE RECONSTRUYE'
-    print 'SYS: Descargando datos de telemetria'
+    print 'SYS: Descargando elementos keplerianos'
     os.system(str(os.getcwd()+'/actu_tle.py'))
-    print 'SYS: Datos de telemetria descargados'
+    print 'SYS: Elementos keplerianos descargados'
     print 'SYS: Reconstruyendo archivo predict.tle'
     rarchivo = str(os.getcwd()+'/weather.txt')
     archivo = open(rarchivo, "r")
@@ -106,10 +106,9 @@ def sintoniza(estado):
         d.start()
     else:
         print("Paramos...")
-        time.sleep(7)
-        #nproceso = int(get_pid("rtl_fm"))
-        #print "kill "+str(nproceso)+" -9"
-        #os.system("kill "+str(nproceso))
+        nproceso = int(get_pid("rtl_fm"))
+        print "kill "+str(nproceso)
+        os.system("kill "+str(nproceso))
 
 class satl:
     def __init__(self,a,b,c,d):
@@ -274,14 +273,17 @@ while True:
 
     hinoaa15 = time.mktime(time.strptime(utctolocal(inicio_noaa15[2]+" "+inicio_noaa15[3]), "%Y-%m-%d %H:%M:%S"))
     dpnoaa15 = time.mktime(time.strptime(fin_noaa15[3], "%H:%M:%S"))-time.mktime(time.strptime(inicio_noaa15[3], "%H:%M:%S"))
+    hfnoaa15 = time.mktime(time.strptime(utctolocal(fin_noaa15[2]+" "+fin_noaa15[3]), "%Y-%m-%d %H:%M:%S"))
     restante15 = hinoaa15 - dif1
 
     hinoaa18 = time.mktime(time.strptime(utctolocal(inicio_noaa18[2]+" "+inicio_noaa18[3]), "%Y-%m-%d %H:%M:%S"))
     dpnoaa18 = time.mktime(time.strptime(fin_noaa18[3], "%H:%M:%S"))-time.mktime(time.strptime(inicio_noaa18[3], "%H:%M:%S"))
+    hfnoaa18 = time.mktime(time.strptime(utctolocal(fin_noaa18[2]+" "+fin_noaa18[3]), "%Y-%m-%d %H:%M:%S"))
     restante18 = hinoaa18 - dif1
 
     hinoaa19 = time.mktime(time.strptime(utctolocal(inicio_noaa19[2]+" "+inicio_noaa19[3]), "%Y-%m-%d %H:%M:%S"))
     dpnoaa19 = time.mktime(time.strptime(fin_noaa19[3], "%H:%M:%S"))-time.mktime(time.strptime(inicio_noaa19[3], "%H:%M:%S"))
+    hfnoaa19 = time.mktime(time.strptime(utctolocal(fin_noaa19[2]+" "+fin_noaa19[3]), "%Y-%m-%d %H:%M:%S"))
     restante19 = hinoaa19 - dif1
 
     print "PROXIMAS PASADAS DEFINIDAS EN:"
@@ -290,9 +292,9 @@ while True:
     print "Inicio NOAA19 "+str(utctolocal(inicio_noaa19[2]+" "+inicio_noaa19[3]))+" LOCAL - "+str(inicio_noaa19[3]+" UTC")
     print "----------------------------------------"
 
-    sat15 = satl("NOAA15",hinoaa15,dpnoaa15,"137620000")
-    sat18 = satl("NOAA18",hinoaa18,dpnoaa18,"137912500")
-    sat19 = satl("NOAA19",hinoaa19,dpnoaa19,"137100000")
+    sat15 = satl("NOAA15",hinoaa15,hfnoaa15,"137620000")
+    sat18 = satl("NOAA18",hinoaa18,hfnoaa18,"137912500")
+    sat19 = satl("NOAA19",hinoaa19,hfnoaa19,"137100000")
 
     l = [sat15,sat18,sat19]
     l.sort()
@@ -301,7 +303,7 @@ while True:
 
     comienzo = int(l[0].b)
     t1 = comienzo + 1
-    t2 = t1 + l[0].c
+    t2 = l[0].c
 
     print "ESPERANDO PARA INICIAR "+l[0].a+" en "+l[0].d+" Hz\n                 "+str(datetime.fromtimestamp(l[0].b).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))+"\nque durara hasta "+str(datetime.fromtimestamp(t2).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))
     print "\n\nEsta es la ejecucion: "+str(ejecuciones)
