@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 ############################################################################
 #      Script de sintonizacion automatica de SDR para satelites NOAA       #
@@ -20,10 +21,119 @@ if not os.path.isfile('/usr/bin/predict'):
     print "Intente instalarlo usando: \"sudo apt install predict\"\n"
     sys.exit(1)
 
-os.system("nohup gnome-terminal -e 'predict -s' &")
+def crea_tle(ruta):
+    print 'ATENCION: El archivo predict.tle no es correcto, SE RECONSTRUYE'
+    print 'SYS: Descargando datos de telemetria'
+    os.system(str(os.getcwd()+'/actu_tle.py'))
+    print 'SYS: Datos de telemetria descargados'
+    print 'SYS: Reconstruyendo archivo predict.tle'
+    rarchivo = str(os.getcwd()+'/weather.txt')
+    archivo = open(rarchivo, "r")
+    if os.path.isfile(ruta):
+        os.remove(ruta)
+    tarchivo = open(ruta, "w")
+    activado = False
+    for linea in archivo.readlines():
+        tlinea = linea[0]+linea[1]+linea[2]+linea[3]+linea[4]+linea[5]+linea[6]
+        if not activado:
+            if tlinea == 'NOAA 15':
+                tarchivo.write('NOAA-15\n')
+                activado = True
+                cuenta = 1
+            elif tlinea == 'NOAA 18':
+                tarchivo.write('NOAA-18\n')
+                activado = True
+                cuenta = 1
+            elif tlinea == 'NOAA 19':
+                tarchivo.write('NOAA-19\n')
+                activado = True
+                cuenta = 1
+        else:
+            tarchivo.write(linea)
+            if cuenta == 2:
+                activado = False
+            cuenta += 1
+    print 'SYS: Archivo predict.tle reconstruido'
+    archivo.close
+    tarchivo.close
+    os.remove(str(os.getcwd()+'/weather.txt'))
 
+ruta = os.environ['HOME']+'/.predict/predict.qth'
+if not os.path.isfile(ruta):
+    print('ERROR: NO EXISTEN DATOS PARA LA ESTACION LOCAL (QTH) EN PREDICT. CONFIGURELO PRIMERO.')
+    pregunta = raw_input("¿Quiere configurarlo ahora? [S] Para configurarlo [N] Para configurarlo con predict")
+    if pregunta == 'N':
+        sys.exit(0)
+    else:
+        os.system('predict')
+
+ruta = os.environ['HOME']+'/.predict/predict.tle'
+if not os.path.isfile(ruta):
+    crea_tle(ruta)
+else:
+    lineas = len(open(ruta).readlines())
+    if lineas != 9:
+        crea_tle(ruta)
+
+def get_pid(name):
+    return check_output(["pidof",name])
+
+def utctolocal(dato):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(dato, '%d%b%y %H:%M:%S')
+    utc = utc.replace(tzinfo=from_zone)
+    central = utc.astimezone(to_zone)
+    central = str(central)
+    central = central[:len(central)-6]
+    return central
+
+def daemon_rtl(frq):
+    #os.system("rtl_fm -M fm -f "+frq+" -s 200000 -r 48k - | aplay -r 11025 -f S16_LE")
+    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp | play -r 11025 -t raw -e s -b 16 -c 1 -V1 -")
+
+
+def sintoniza(estado):
+    if estado:
+        os.system('clear')
+        print "########################################"
+        print "#         SISTEMA SINTONIZADO          #"
+        print "#            REPRODUCIENDO             #"
+        print "########################################"
+        print("Sintonizamos "+l[0].a+" en "+l[0].d)
+        d = threading.Thread(target=daemon_rtl, args=(l[0].d,))
+        d.setDaemon(True)
+        d.start()
+    else:
+        print("Paramos...")
+        time.sleep(7)
+        #nproceso = int(get_pid("rtl_fm"))
+        #print "kill "+str(nproceso)+" -9"
+        #os.system("kill "+str(nproceso))
+
+class satl:
+    def __init__(self,a,b,c,d):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+    def __str__(self):
+        return "a=%s b=%s c=%s d=%s" % (self.a,self.b,self.c,self.d)
+    def __cmp__( self, other ) :
+        if self.b < other.b :
+            rst = -1
+        elif self.b > other.b :
+            rst = 1
+        else:
+            rst = 0
+        return rst
+
+os.system("gnome-terminal -e 'predict -s' &")
+ejecuciones = 0
 # Hacemos que cuando acabe se vuelva a repetir
 while True:
+    os.system("clear")
+    ejecuciones += 1
     def signal_handler(signal, frame):
         print(' SALIDA CORRECTA')
         nproceso = int(get_pid("predict"))
@@ -32,85 +142,6 @@ while True:
         sys.exit(0)
     signal.signal(signal.SIGINT, signal_handler)
 
-    ruta = os.environ['HOME']+'/.predict/predict.qth'
-    if not os.path.isfile(ruta):
-        print('ERROR: NO EXISTEN DATOS PARA LA ESTACION LOCAL (QTH) EN PREDICT. CONFIGURELO PRIMERO.')
-        sys.exit(0)
-
-    ruta = os.environ['HOME']+'/.predict/predict.tle'
-    #if not os.path.isfile(ruta):
-    #    print('ERROR: NO EXISTEN DATOS DE CORRECCIONES DE TELEMETRIA.')
-    #    sys.exit(0)
-
-    def crea_tle(ruta):
-        print 'ATENCION: El archivo predict.tle no es correcto, SE RECONSTRUYE'
-        print 'SYS: Descargando datos de telemetria'
-        os.system(str(os.getcwd()+'/actu_tle'))
-        print 'SYS: Datos de telemetria descargados'
-        print 'SYS: Reconstruyendo archivo predict.tle'
-        rarchivo = str(os.getcwd()+'/weather.txt')
-        archivo = open(rarchivo, "r")
-        if os.path.isfile(ruta):
-            os.remove(ruta)
-        tarchivo = open(ruta, "w")
-        activado = False
-        for linea in archivo.readlines():
-            tlinea = linea[0]+linea[1]+linea[2]+linea[3]+linea[4]+linea[5]+linea[6]
-            if not activado:
-                if tlinea == 'NOAA 15':
-                    tarchivo.write('NOAA-15\n')
-                    activado = True
-                    cuenta = 1
-                elif tlinea == 'NOAA 18':
-                    tarchivo.write('NOAA-18\n')
-                    activado = True
-                    cuenta = 1
-                elif tlinea == 'NOAA 19':
-                    tarchivo.write('NOAA-19\n')
-                    activado = True
-                    cuenta = 1
-            else:
-                tarchivo.write(linea)
-                if cuenta == 2:
-                    activado = False
-                cuenta += 1
-
-        print 'SYS: Archivo predict.tle reconstruido'
-
-        archivo.close
-        tarchivo.close
-
-    if not os.path.isfile(ruta):
-        #print "SYS: Creamos tle proque no existe el archivo"
-        crea_tle(ruta)
-    else:
-        lineas = len(open(ruta).readlines())
-        if lineas != 9:
-            #print "SYS: Creamos tle porque no coincide el numero de lineas"
-            crea_tle(ruta)
-
-
-    def get_pid(name):
-        return check_output(["pidof",name])
-
-    # Ejecutamos predict en modo servidor en un terminal a parte
-    """def daemon_predict():
-        os.system("gnome-terminal -e 'predict -s'")
-
-    def server_predict(estado):
-        if estado:
-            d = threading.Thread(target=daemon_predict, name='daemon_predict')
-            d.setDaemon(True)
-            d.start()
-        else:
-            nproceso = int(get_pid("predict"))
-            os.system("kill "+str(nproceso))
-
-    #os.system("gnome-terminal -e 'predict -s'")
-    server_predict(1)"""
-
-    # Recogemos el identificador de proceso de predict para luego cerrarlo
-    # y comprobamos que se ha iniciado
     try:
         nproceso = int(get_pid("predict"))
     except:
@@ -125,19 +156,32 @@ while True:
     port=1210
     addr="127.0.0.1"
     # Obtenemos los datos del QTH configurados en predict
-    noaa15 = []
     data=str("GET_QTH")
     s.sendto(data,(addr,port))
     data,addr=s.recvfrom(1024)
     qth = data.split("\n")
+    if qth[0] == 'W1AW':
+        nproceso = int(get_pid("predict"))
+        os.system('kill '+str(nproceso))
+        print "### ATENCION ### Los datos de la estacion local no han sido configurados."
+        print "                 Esto provoca que los datos de prediccion no sean correctos"
+        print "                 para su localizacion actual."
+        print "   Inicie predict y en la opcion [G] configure estos datos.\n"
+        raw_input("Pulsa una tecla para continuar o Ctrl+C para salir")
+        for x in qth[:]:
+            qth.remove(x)
+        data=str("GET_QTH")
+        s.sendto(data,(addr,port))
+        data,addr=s.recvfrom(1024)
+        qth = data.split("\n")
     qth.pop(len(qth)-1)
     s.close
+    os.system("gnome-terminal -e 'predict -s'")
 
-    # Realizamos la conexion al servidor de predict
+    # RECOPILAMOS LOS DATOS PARA NOAA15
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     port=1210
     addr="127.0.0.1"
-    # Recogemos los datos de prediccion de pasadas de satelite NOAA15
     noaa15 = []
     data=str("PREDICT NOAA-15")
     s.sendto(data,(addr,port))
@@ -161,11 +205,8 @@ while True:
             fin_noaa15.pop(count-1)
         count -= 1
     fin_noaa15.pop(len(fin_noaa15)-1)
-    #print "Proximo pase NOAA-15"
-    #print "Dia: "+inicio_noaa15[2]+" Inicio: "+inicio_noaa15[3]+"UTC Fin: "+fin_noaa15[3]+"UTC"
 
-    # Realizamos la misma operacion que con el NOAA15 pero para el NOAA18
-    # SEGURAMENTE ESTA OPERACION SE PUEDA OPTIMIZAR EN UNA FUNCION
+    # RECOPILAMOS LOS DATOS PARA NOAA18
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     port=1210
     addr="127.0.0.1"
@@ -192,9 +233,8 @@ while True:
             fin_noaa18.pop(count-1)
         count -= 1
     fin_noaa18.pop(len(fin_noaa18)-1)
-    #print "Proximo pase NOAA-18"
-    #print "Dia: "+inicio_noaa18[2]+" Inicio: "+inicio_noaa18[3]+"UTC Fin: "+fin_noaa18[3]+"UTC"
 
+    # RECOPILAMOS LOS DATOS PARA NOAA19
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     port=1210
     addr="127.0.0.1"
@@ -221,31 +261,13 @@ while True:
             fin_noaa19.pop(count-1)
         count -= 1
     fin_noaa19.pop(len(fin_noaa19)-1)
-    #print "Proximo pase NOAA-19"
-    #print "Dia: "+inicio_noaa19[2]+" Inicio: "+inicio_noaa19[3]+"UTC Fin: "+fin_noaa19[3]+"UTC"
 
-    #server_predict(0)
-    #os.system("kill "+str(nproceso))
     print "--------- DATOS LOCALES DE QTH ---------"
     print "         Identificador: "+qth[0]
     print "               Latitud: "+qth[1]
     print "              Longitud: "+qth[2]
     print "               Altitud: "+qth[3]
     print "----------------------------------------"
-
-    def utctolocal(dato):
-        from_zone = tz.tzutc()
-        to_zone = tz.tzlocal()
-        # utc = datetime.utcnow()
-        utc = datetime.strptime(dato, '%d%b%y %H:%M:%S')
-        # Tell the datetime object that it's in UTC time zone since
-        # datetime objects are 'naive' by default
-        utc = utc.replace(tzinfo=from_zone)
-        # Convert time zone
-        central = utc.astimezone(to_zone)
-        central = str(central)
-        central = central[:len(central)-6]
-        return central
 
     dif = datetime.utcnow().strftime('%Y%m%d %H:%M:%S')
     dif1 = time.mktime(time.strptime(dif, "%Y%m%d %H:%M:%S"))
@@ -266,65 +288,28 @@ while True:
     print "Inicio NOAA15 "+str(utctolocal(inicio_noaa15[2]+" "+inicio_noaa15[3]))+" LOCAL - "+str(inicio_noaa15[3]+" UTC")
     print "Inicio NOAA18 "+str(utctolocal(inicio_noaa18[2]+" "+inicio_noaa18[3]))+" LOCAL - "+str(inicio_noaa18[3]+" UTC")
     print "Inicio NOAA19 "+str(utctolocal(inicio_noaa19[2]+" "+inicio_noaa19[3]))+" LOCAL - "+str(inicio_noaa19[3]+" UTC")
-
-    class satl:
-        def __init__(self,a,b,c,d):
-            self.a = a
-            self.b = b
-            self.c = c
-            self.d = d
-        def __str__(self):
-            return "a=%s b=%s c=%s d=%s" % (self.a,self.b,self.c,self.d)
-        def __cmp__( self, other ) :
-            if self.b < other.b :
-                rst = -1
-            elif self.b > other.b :
-                rst = 1
-            else:
-                rst = 0
-            return rst
+    print "----------------------------------------"
 
     sat15 = satl("NOAA15",hinoaa15,dpnoaa15,"137620000")
     sat18 = satl("NOAA18",hinoaa18,dpnoaa18,"137912500")
     sat19 = satl("NOAA19",hinoaa19,dpnoaa19,"137100000")
 
-    """sat15 = satl("NOAA15",hinoaa15,dpnoaa15,"88900000")
-    sat18 = satl("NOAA18",hinoaa18,dpnoaa18,"92500000")
-    sat19 = satl("NOAA19",hinoaa19,dpnoaa19,"102200000")"""
-
     l = [sat15,sat18,sat19]
     l.sort()
-
-    def daemon(frq):
-        #os.system("rtl_fm -M wbfm -f "+frq+" -s 200000 -r 48k - | aplay -r 48k -f S16_LE")
-        os.system("rtl_fm -M fm -f "+frq+" -s 200000 -r 48k - | aplay -r 11025 -f S16_LE")
-
-    def abrir_cerrar(estado):
-        if estado:
-            print("Sintonizamos "+l[0].a+" en "+l[0].d)
-            d = threading.Thread(target=daemon, args=(l[0].d,))
-            d.setDaemon(True)
-            d.start()
-        else:
-            print("Paramos...")
-            nproceso = int(get_pid("rtl_fm"))
-            print "kill "+str(nproceso)+" -9"
-            os.system("kill "+str(nproceso))
 
     programador = sched.scheduler(time.time, time.sleep)
 
     comienzo = int(l[0].b)
     t1 = comienzo + 1
     t2 = t1 + l[0].c
-    """comienzo = int(time.time()+4)
-    t1 = comienzo + 1
-    t2 = t1 + 4"""
-    print "ESPERANDO PARA INICIAR EN: "+str(datetime.fromtimestamp(l[0].b).strftime('%Y-%m-%d %H:%M:%S'))+" para "+l[0].a+" que durara hasta "+str(datetime.fromtimestamp(t2).strftime('%Y-%m-%d %H:%M:%S'))+" en "+l[0].d
 
-    programador.enterabs(t1, 1, abrir_cerrar, (1,))
-    programador.enterabs(t2, 1, abrir_cerrar, (0,))
+    print "ESPERANDO PARA INICIAR "+l[0].a+" en "+l[0].d+" Hz\n                 "+str(datetime.fromtimestamp(l[0].b).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))+"\nque durara hasta "+str(datetime.fromtimestamp(t2).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))
+    print "\n\nEsta es la ejecucion: "+str(ejecuciones)
 
+    programador.enterabs(t1, 1, sintoniza, (1,))
+    programador.enterabs(t2, 1, sintoniza, (0,))
     programador.run()
+
     print "SINTONIZACION FINALIZADA: "+str(time.ctime())
 
     for x in inicio_noaa15[:]:

@@ -1,7 +1,44 @@
-################################################################################
-#                                autoNOAA 1.0                                  #
-################################################################################
+autoNOAA 1.0
 
-Este script en python sirve para automatizar la sintonización de un dongle SDR
-permitiendo que WXtoimg genere recoga el audio y genere las imagenes que transmiten
-los satelites NOAA en funcionamiento
+ESTA APLICACION NO ESTA TERMINADA Y EN UN FUTURO PRÓXIMO PROBABLEMENTE CAMBIE COMPLENTAMENTE
+
+Archivos:
+  actu_tle.py - Rutas para actualizar los elementos keplerianos de los diferentes satelites
+  actuNOAA.py - Script de uso
+  README - Este archivo
+
+Este script sirve para automatizar la sintonización de un dongle SDR permitiendo que WXtoimg recoga el audio y genere las imagenes que transmiten los satelites NOAA en funcionamiento cuando estan visibles desde una posicion dada.
+Lo que me llevó a hacer este script fue que no encontré ningun software de decodificacion que pudiera controlar un dongle SDR, el WXtoimg es perfecto para automatizar la decodificacion ya que integra un sistema de deteccion de pasadas de satelites y decodifica en tiempo real la señal de entrada de microfono pero solo puede controlar los receptores de radio que tiene configurados y yo queria implementarlo en una RPi con el dongle NooElec NESDR Mini y una antena QFH. Ademas de esto el WXtoimg puede subir las imagenes a un servidor donde podemos tener configurado un servicio web para que se muestren.
+
+Es el primer script que hago en python y que tiene que servir para algo en concreto, así que seguramente haya errores o modos de optimizar el código, si a alguien le resultara útil y quiere modificarlo sientase libre de hacerlo, si es el caso me gustaria que me lo dijeran para aprender de mis errores.
+
+Para poder ejecutar el script es necesario tener instalado:
+  - predict (paquete gpredict)
+  - rtl_fm (paquete rtl-sdr)
+  - sox (paquete sox)
+y para poder decodificar la señal:
+  - WXtoimg (no viene en los repositoriso de ubuntu, http://www.wxtoimg.com/)
+  - pavucontrol (paquete pavucontrol)
+
+Los materiales necesarios son:
+  - Antena ajustada a 137Mhz (yo uso una QFH construida en base a https://www.jcoppens.com/ant/qfh/calc.en.php)
+  - Dongle SDR (yo uso el NooElec NESDR Mini pero puede valer cualquier otro con RTL2832)
+  - Y claro un PC o una RPi o algo parecido
+
+Algunas notas sobre las aplicaciones:
+  - Sobre predict:
+      Esta aplicacion sirve para predecir la visibilidad de satelites desde una posicion dada que hay que configurar usando el programa que crea el archivo "predict.qth" en la carpeta ".predict" de nuestro directorio home.
+  - Sobre rtl_fm:
+      Es la aplicacion de sintonizacion incluida en el paquete rtl-sdr, que es usado por muchos programas de SDR (como gqrx) para manejar los dongles SDR mas comunes.
+  - Sobre sox:
+      Este paquete sirve para manipular el audio, uso "play" para reproducir la sintonizacion del dongle y pasarsela a WXtoimg.
+  - Sobre WXtoimg:
+      Esta aplicacion me parece una maravilla para estas cosas (a nivel aficionado claro), centraliza y automatiza varias tareas que son necesarias para crear una bonita imagen de la transmision de los satelites, aunque no es de codigo abierto (por eso tendre que buscar una alternativa) es la mejor que he encontrado y corre en procesadores ARM.
+  - Sobre pavucontrol:
+      Es un simple controlador de sonido para pulseaudio, digo simple porque hace simple la tarea de redireccionar la salida de audio a la entrada y poder usarla en WXtoimg.
+
+Sobre las licencias
+  De momento no he incluido en este repositorio el software necesario para usar el script porque no me he mirado las licencias.
+
+Para mi yo futuro
+  Este script solo sirve para recibir las imagenes en APT de los satelites meteorológicos pero, tanto el dongle SDR con el sintonizador Rafael R820T como WXtoimg pueden sintonizar y procesar la transmision de imagenes en alta resolucion que actualmente estan funcionando en el NOAA-18 y el NOAA-19, estas imagenes emitidas en HRPT/AHRPT son transmitidas en las frecuencias 1.707Ghz y 1.698Ghz respectivamente, con lo que solo necesitaremos una antena adaptada a esas frecuencia y con esto pasamos a la siguiente parte del proyecto que es el control de rotores para una antena direccional usando Arduino y RPi. Arduino por que quiero implementarlo mediante Wifi, se podría hacer mediante el puerto GPIO de la RPi pero debido a que la antena estará bastante separada de esta, es inviable.
