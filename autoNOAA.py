@@ -34,7 +34,7 @@ def crea_tle(ruta):
     tarchivo = open(ruta, "w")
     activado = False
     for linea in archivo.readlines():
-        tlinea = linea[0]+linea[1]+linea[2]+linea[3]+linea[4]+linea[5]+linea[6]
+        tlinea = linea[:6]
         if not activado:
             if tlinea == 'NOAA 15':
                 tarchivo.write('NOAA-15\n')
