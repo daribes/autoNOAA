@@ -109,6 +109,7 @@ def sintoniza(estado):
         nproceso = int(get_pid("rtl_fm"))
         print "kill "+str(nproceso)
         os.system("kill "+str(nproceso))
+        time.sleep(7)
 
 class satl:
     def __init__(self,a,b,c,d):
