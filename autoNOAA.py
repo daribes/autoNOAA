@@ -303,7 +303,7 @@ while True:
 
     comienzo = int(l[0].b)
     t1 = comienzo + 1
-    t2 = l[0].c
+    t2 = l[0].c + 20
 
     print "ESPERANDO PARA INICIAR "+l[0].a+" en "+l[0].d+" Hz\n                 "+str(datetime.fromtimestamp(l[0].b).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))+"\nque durara hasta "+str(datetime.fromtimestamp(t2).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))
     print "\n\nEsta es la ejecucion: "+str(ejecuciones)
