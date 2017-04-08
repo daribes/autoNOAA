@@ -106,9 +106,7 @@ def sintoniza(estado):
     else:
         print("Paramos...")
         nproceso = int(get_pid("rtl_fm"))
-        print "kill "+str(nproceso)
         os.system("kill "+str(nproceso))
-        time.sleep(7)
 
 class satl:
     def __init__(self,a,b,c,d):
@@ -303,7 +301,7 @@ while True:
 
     comienzo = int(l[0].b)
     t1 = comienzo + 1
-    t2 = l[0].c + 20
+    t2 = l[0].c
 
     print "ESPERANDO PARA INICIAR "+l[0].a+" en "+l[0].d+" Hz\n                 "+str(datetime.fromtimestamp(l[0].b).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))+"\nque durara hasta "+str(datetime.fromtimestamp(t2).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))
     print "\n\nEsta es la ejecucion: "+str(ejecuciones)
@@ -321,10 +319,11 @@ while True:
     for x in inicio_noaa19[:]:
         inicio_noaa19.remove(x)
 
-    try: nproceso = int(get_pid("rtl_fm"))
+    print "SYS: Esperando a que se cierre completamente la reproduccion"
+    try: nproceso = int(get_pid("play"))
     except: nproceso = 0
     while nproceso != 0:
         try:
-            nproceso = int(get_pid("rtl_fm"))
+            nproceso = int(get_pid("play"))
         except:
             nproceso = 0
