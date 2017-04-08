@@ -18,7 +18,7 @@ from subprocess import check_output
 
 if not os.path.isfile('/usr/bin/predict'):
     print "No se puede iniciar predict, Parece que no se encuentra instalado en sus sitema\n"
-    print "Intente instalarlo usando: \"sudo apt install predict\"\n"
+    print "Intente instalarlo usando: \"sudo apt install gpredict\"\n"
     sys.exit(1)
 
 def crea_tle(ruta):
