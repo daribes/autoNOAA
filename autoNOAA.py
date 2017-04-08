@@ -320,3 +320,11 @@ while True:
         inicio_noaa18.remove(x)
     for x in inicio_noaa19[:]:
         inicio_noaa19.remove(x)
+
+    try: nproceso = int(get_pid("rtl_fm"))
+    except: nproceso = 0
+    while nproceso != 0:
+        try:
+            nproceso = int(get_pid("rtl_fm"))
+        except:
+            nproceso = 0
