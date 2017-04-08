@@ -88,8 +88,8 @@ def utctolocal(dato):
     return central
 
 def daemon_rtl(frq):
-    #os.system("rtl_fm -M fm -f "+frq+" -s 200000 -r 48k - | aplay -r 11025 -f S16_LE")
-    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp | play -r 11025 -t raw -e s -b 16 -c 1 -V1 -")
+    print "SYS: rtl_fm y play conectados"
+    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
 
 
 def sintoniza(estado):
@@ -99,12 +99,12 @@ def sintoniza(estado):
         print "#         SISTEMA SINTONIZADO          #"
         print "#            REPRODUCIENDO             #"
         print "########################################"
-        print("Sintonizamos "+l[0].a+" en "+l[0].d)
+        print "Sintonizamos "+str(l[0].a)+" en "+str(l[0].d)+" hasta "+str(l[0].c)
         d = threading.Thread(target=daemon_rtl, args=(l[0].d,))
         d.setDaemon(True)
         d.start()
     else:
-        print("Paramos...")
+        print "Paramos..."
         nproceso = int(get_pid("rtl_fm"))
         os.system("kill "+str(nproceso))
 
@@ -132,7 +132,7 @@ while True:
     os.system("clear")
     ejecuciones += 1
     def signal_handler(signal, frame):
-        print(' SALIDA CORRECTA')
+        print ' SALIDA CORRECTA'
         nproceso = int(get_pid("predict"))
         if nproceso:
             os.system("kill "+str(nproceso))
@@ -320,8 +320,7 @@ while True:
         inicio_noaa19.remove(x)
 
     print "SYS: Esperando a que se cierre completamente la reproduccion"
-    try: nproceso = int(get_pid("play"))
-    except: nproceso = 0
+    nproceso = int(get_pid("play"))
     while nproceso != 0:
         try:
             nproceso = int(get_pid("play"))
