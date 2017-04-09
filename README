@@ -3,7 +3,7 @@ autoNOAA 1.0
 ESTA APLICACION NO ESTA TERMINADA Y EN UN FUTURO PRÓXIMO PROBABLEMENTE CAMBIE COMPLENTAMENTE
 
 Archivos:
-  actu_tle.py - Rutas para actualizar los elementos keplerianos de los diferentes satelites
+  actu_tle.sh - Rutas para actualizar los elementos keplerianos de los diferentes satelites
   actuNOAA.py - Script de uso
   README - Este archivo
 
