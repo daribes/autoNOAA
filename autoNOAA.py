@@ -89,7 +89,7 @@ def utctolocal(dato):
 
 def daemon_rtl(frq):
     print "SYS: rtl_fm y play conectados"
-    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
+    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp -p 91 | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
 
 
 def sintoniza(estado):
@@ -136,7 +136,14 @@ class satl:
             rst = 0
         return rst
 
+print ("SYS: Iniciando predict")
 os.system("gnome-terminal -e 'predict -s' &")
+nproceso = 0
+while nproceso == 0:
+    try:
+        nproceso = int(get_pid("predict"))
+    except:
+        nproceso = 0
 ejecuciones = 0
 # Hacemos que cuando acabe se vuelva a repetir
 while True:
@@ -144,16 +151,20 @@ while True:
     ejecuciones += 1
     def signal_handler(signal, frame):
         print ' SALIDA CORRECTA'
-        nproceso = int(get_pid("predict"))
-        if nproceso:
-            os.system("kill "+str(nproceso))
-        sys.exit(0)
+        try:
+            nproceso = int(get_pid("predict"))
+            if nproceso:
+                os.system("kill "+str(nproceso))
+                sys.exit(0)
+        except:
+            sys.exit(0)
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
         nproceso = int(get_pid("predict"))
     except:
         os.system("gnome-terminal -e 'predict -s'")
+        time.sleep(3)
         try:
             nproceso = int(get_pid("predict"))
         except:
@@ -184,7 +195,7 @@ while True:
         qth = data.split("\n")
     qth.pop(len(qth)-1)
     s.close
-    os.system("gnome-terminal -e 'predict -s'")
+    #os.system("gnome-terminal -e 'predict -s'")
 
     # RECOPILAMOS LOS DATOS PARA NOAA15
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
