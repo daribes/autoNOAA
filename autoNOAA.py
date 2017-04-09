@@ -137,13 +137,15 @@ class satl:
         return rst
 
 print ("SYS: Iniciando predict")
-os.system("gnome-terminal -e 'predict -s' &")
+os.system("gnome-terminal -e 'predict -s'")
 nproceso = 0
 while nproceso == 0:
     try:
         nproceso = int(get_pid("predict"))
+        print "predict iniciado"
     except:
         nproceso = 0
+        print "No se ha inidicado predict"
 ejecuciones = 0
 # Hacemos que cuando acabe se vuelva a repetir
 while True:
