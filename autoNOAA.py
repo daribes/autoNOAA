@@ -9,7 +9,6 @@ import socket
 import sys
 import os
 import time
-#import sched
 from datetime import datetime, timedelta
 from dateutil import tz
 import signal
@@ -108,8 +107,7 @@ def sintoniza(estado):
         time.sleep(10)
         print "Reproduciendo durante: ",
         while time.time() <= fin:
-            #now = fin - time.time() - 3600
-            time.sleep(0.9)
+            time.sleep(0.1)
             now = time.time() - inicio - 3600
             contador = str(datetime.fromtimestamp(now).strftime('%H:%M:%S'))
             sys.stdout.write(contador)
@@ -198,7 +196,6 @@ while True:
         qth = data.split("\n")
     qth.pop(len(qth)-1)
     s.close
-    #os.system("gnome-terminal -e 'predict -s'")
 
     # RECOPILAMOS LOS DATOS PARA NOAA15
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -322,33 +319,22 @@ while True:
     l = [sat15,sat18,sat19]
     l.sort()
 
-    #programador = sched.scheduler(time.time, time.sleep)
-
-    #comienzo = int(l[0].b)
-    #t1 = comienzo + 1
-    #t2 = l[0].c
-
     inicio = l[0].b
     fin = l[0].c
     print "ESPERANDO PARA INICIAR "+l[0].a+" en "+l[0].d+" Hz\n                 "+str(datetime.fromtimestamp(inicio).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))+"\nque durara hasta "+str(datetime.fromtimestamp(fin).strftime('%H:%M:%S HORA LOCAL del %Y-%m-%d'))
     print "\n\nEsta es la ejecucion: "+str(ejecuciones)
 
-    #programador.enterabs(t1, 1, sintoniza, (1,))
-    #Aqui creo que hay un problema de rendimiento
     if inicio >= time.time():
         print "Faltan: ",
         while inicio >= time.time():
-            time.sleep(0.9)
+            time.sleep(0.1)
             now = inicio - time.time() - 3600
-            #now = time.time() - inicio - 3600
             contador = str(datetime.fromtimestamp(now).strftime('%H:%M:%S'))
             sys.stdout.write(contador)
             sys.stdout.flush()
             sys.stdout.write("\b\b\b\b\b\b\b\b")
     sintoniza(1)
     sintoniza(0)
-    #programador.enterabs(t2, 1, sintoniza, (0,))
-    #programador.run()
 
     print "SINTONIZACION FINALIZADA: "+str(time.ctime())
 
