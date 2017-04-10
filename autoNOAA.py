@@ -109,6 +109,7 @@ def sintoniza(estado):
         print "Reproduciendo durante: ",
         while time.time() <= fin:
             #now = fin - time.time() - 3600
+            time.sleep(0.9)
             now = time.time() - inicio - 3600
             contador = str(datetime.fromtimestamp(now).strftime('%H:%M:%S'))
             sys.stdout.write(contador)
@@ -333,10 +334,11 @@ while True:
     print "\n\nEsta es la ejecucion: "+str(ejecuciones)
 
     #programador.enterabs(t1, 1, sintoniza, (1,))
-
+    #Aqui creo que hay un problema de rendimiento
     if inicio >= time.time():
         print "Faltan: ",
         while inicio >= time.time():
+            time.sleep(0.9)
             now = inicio - time.time() - 3600
             #now = time.time() - inicio - 3600
             contador = str(datetime.fromtimestamp(now).strftime('%H:%M:%S'))
