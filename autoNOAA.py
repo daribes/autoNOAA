@@ -88,7 +88,8 @@ def utctolocal(dato):
 
 def daemon_rtl(frq):
     print "SYS: rtl_fm y play conectados"
-    os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp -p 91 | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
+    os.system("rtl_fm -f "+frq+" -M fm -s 55k -A fast -r 11025 -l 0 -p 55 - | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
+    #os.system("rtl_fm -f "+frq+" -M fm -s 170k -A fast -r 32k -l 0 -E deemp -p 60 | play -r 11025 -t raw -e s -b 16 -c 1 -V1 - > /dev/null 2>&1")
 
 
 def sintoniza(estado):
